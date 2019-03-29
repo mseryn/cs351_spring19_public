@@ -41,6 +41,15 @@ struct results {
 };
 static struct results results = {-1, 0, INT_MAX};
 
+static void writeInfoFile(const char *basename, unsigned long long int aStart, unsigned long long int bStart, int m, int n) {
+    char filename[4096];
+    sprintf(filename, "%s.info", basename);
+    FILE *file = fopen(filename, "w");
+    if (!file) { return; }
+    fprintf(file, "%llx %llx %d %d", aStart, bStart, m, n);
+    fclose(file);
+}
+
 /* 
  * eval_perf - Evaluate the performance of the registered transpose functions
  */
@@ -69,16 +78,18 @@ void eval_perf(unsigned int s, unsigned int E, unsigned int b)
         /* Use valgrind to generate the trace */
 
         sprintf(cmd, "valgrind --tool=lackey --trace-mem=yes --log-fd=1 -v ./tracegen -M %d -N %d -F %d  > trace.tmp", M, N,i);
-        flag=WEXITSTATUS(system(cmd));
+        int status = system(cmd);
+        flag=WEXITSTATUS(status);
         if (0!=flag) {
             printf("Validation error at function %d! Run ./tracegen -M %d -N %d -F %d for details.\nSkipping performance evaluation for this function.\n",flag-1,M,N,i);      
             continue;
         }
+        unsigned long long int aStart, bStart;
 
         /* Get the start and end marker addresses */
         FILE* marker_fp = fopen(".marker", "r");
         assert(marker_fp);
-        fscanf(marker_fp, "%llx %llx", &marker_start, &marker_end);
+        fscanf(marker_fp, "%llx %llx %llx %llx", &marker_start, &marker_end, &aStart, &bStart);
         fclose(marker_fp);
 
 
@@ -97,6 +108,7 @@ void eval_perf(unsigned int s, unsigned int E, unsigned int b)
         sprintf(filename, "trace.f%d", i);
         part_trace_fp = fopen(filename, "w");
         assert(part_trace_fp);
+        writeInfoFile(filename, aStart, bStart, M, N);
     
         /* Locate trace corresponding to the trans function */
         flag = 0;
@@ -133,6 +145,7 @@ void eval_perf(unsigned int s, unsigned int E, unsigned int b)
             }
         }
         fclose(full_trace_fp);
+        unlink("trace.tmp");
 
         /* Run the reference simulator */
         printf("Step 2: Evaluating performance (s=%d, E=%d, b=%d)\n", s, E, b);

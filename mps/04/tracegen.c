@@ -79,9 +79,11 @@ int main(int argc, char* argv[]){
     /* Record marker addresses */
     FILE* marker_fp = fopen(".marker","w");
     assert(marker_fp);
-    fprintf(marker_fp, "%llx %llx", 
+    fprintf(marker_fp, "%llx %llx %llx %llx",
             (unsigned long long int) &MARKER_START,
-            (unsigned long long int) &MARKER_END );
+            (unsigned long long int) &MARKER_END,
+            (unsigned long long int) A,
+            (unsigned long long int) B );
     fclose(marker_fp);
 
     if (-1==selectedFunc) {
