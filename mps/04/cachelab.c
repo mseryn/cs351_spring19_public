@@ -98,6 +98,7 @@ void initializeArrayAccessConverter(const char *tracefileName) {
     FILE *file = fopen(filename, "r");
     if (file) {
         int scanned = fscanf(file, "%llx %llx %d %d", &transposeInfo.A, &transposeInfo.B, &transposeInfo.M, &transposeInfo.N);
+        fclose(file);
         if (scanned == 4) {
             transposeInfoStatus = 1;
             return;
