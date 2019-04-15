@@ -462,7 +462,7 @@ static trace_t *read_trace(char *tracedir, char *filename)
     strcpy(path, tracedir);
     strcat(path, filename);
     if ((tracefile = fopen(path, "r")) == NULL) {
-	sprintf(msg, "Could not open %s in read_trace", path);
+	snprintf(msg, MAXLINE, "Could not open %s in read_trace", path);
 	unix_error(msg);
     }
     fscanf(tracefile, "%d", &(trace->sugg_heapsize)); /* not used */
